@@ -9,3 +9,11 @@ where
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
 }
+
+pub fn extract_number_vec(s: String) -> Vec<i64> {
+    return s
+        .split(" ")
+        .filter(|x| x.len() > 0)
+        .map(|x: &str| x.trim().parse::<i64>().unwrap())
+        .collect::<Vec<i64>>();
+}
