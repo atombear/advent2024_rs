@@ -21,6 +21,14 @@ fn check(v: &Vec<&i64>) -> bool {
     }
 }
 
+fn bool_to_int(b: bool) -> i64 {
+    if b {
+        1
+    } else {
+        0
+    }
+}
+
 fn drop<'a, T>(v: &'a Vec<&T>, d: usize) -> Vec<&'a T> {
     return v
         .iter()
@@ -32,35 +40,33 @@ fn drop<'a, T>(v: &'a Vec<&T>, d: usize) -> Vec<&'a T> {
 
 pub fn problem() -> (usize, String, String) {
     let data_dir: String = env!("CARGO_MANIFEST_DIR").to_owned();
-    let data_path: PathBuf = [data_dir, "src".to_string(), "input2".to_string()]
-        .iter()
-        .collect();
+    let data_path: PathBuf = [data_dir, "src".to_string(), "input2".to_string()].iter().collect();
 
-    let mut return0: i64 = 0;
+    let mut result0: i64 = 0;
     let mut ch0: bool;
-    let mut return1: i64 = 0;
+    let mut result1: i64 = 0;
     let mut ch1: bool;
 
     if let Ok(lines) = read_lines(data_path) {
         for line in lines {
             if let Ok(nums_str) = line {
                 let bare_nums: Vec<i64> = extract_number_vec(nums_str);
+
+                // vector of refs
                 let nums: Vec<&i64> = bare_nums.iter().map(|x| x).collect();
 
                 ch0 = check(&nums);
-                return0 += if ch0 { 1 } else { 0 };
+                result0 += bool_to_int(ch0);
 
-                if ch0 {
-                    return1 += 1
+                result1 += if ch0 {
+                    1
                 } else {
-                    ch1 = (0..nums.len())
-                        .map(|idx| check(&drop(&nums, idx)))
-                        .any(|x| x);
-                    return1 += if ch1 { 1 } else { 0 }
-                }
+                    ch1 = (0..nums.len()).map(|idx| check(&drop(&nums, idx))).any(|x| x);
+                    bool_to_int(ch1)
+                };
             }
         }
     }
 
-    return (1, format!("{}", return0), format!("{}", return1));
+    return (1, format!("{}", result0), format!("{}", result1));
 }

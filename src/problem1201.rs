@@ -28,9 +28,7 @@ fn get_count_map<'a, T: Eq + PartialEq + Hash>(l: &'a Vec<T>) -> HashMap<&'a T, 
 
 pub fn problem() -> (usize, String, String) {
     let data_dir: String = env!("CARGO_MANIFEST_DIR").to_owned();
-    let data_path: PathBuf = [data_dir, "src".to_string(), "input1".to_string()]
-        .iter()
-        .collect();
+    let data_path: PathBuf = [data_dir, "src".to_string(), "input1".to_string()].iter().collect();
 
     let mut x0: i64;
     let mut x1: i64;
