@@ -4,7 +4,10 @@ use crate::utils::read_lines;
 
 fn parse_rule(s: String) -> (i64, i64) {
     let mut xy = s.split('|');
-    return (xy.next().unwrap().parse().unwrap(), xy.next().unwrap().parse().unwrap());
+    return (
+        xy.next().unwrap().parse::<i64>().unwrap(),
+        xy.next().unwrap().parse::<i64>().unwrap(),
+    );
 }
 
 fn parse_pages(s: String) -> Vec<i64> {
