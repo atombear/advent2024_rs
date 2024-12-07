@@ -1,4 +1,7 @@
-use std::{collections::HashSet, path::PathBuf};
+use std::{
+    collections::{HashMap, HashSet},
+    path::PathBuf,
+};
 
 use crate::utils::read_lines;
 
@@ -31,7 +34,7 @@ fn move_guard(g: &Guard) -> Guard {
     };
 }
 
-fn is_loop(start: (i64, i64), obs: &HashSet<(i64, i64)>) -> bool {
+fn is_loop(start: (i64, i64), row_obs: &HashMap<i64, HashSet<i64>>, col_obs: &HashMap<i64, HashSet<i64>>) -> bool {
     let mut r: i64;
     let mut c: i64;
     (r, c) = start;
@@ -40,72 +43,66 @@ fn is_loop(start: (i64, i64), obs: &HashSet<(i64, i64)>) -> bool {
 
     let mut paths: HashSet<(i64, i64, i64, i64)> = HashSet::new();
 
+    let mut d: i64 = 0;
+
+    let mut new_row: &i64 = &0;
+    let mut new_col: &i64 = &0;
+    let empty: HashSet<i64> = HashSet::from([-1]);
+
     loop {
-        // move up
-        let new_row: i64 = *obs
-            .iter()
-            .filter(|(x, y)| y == &c && x < &r)
-            .map(|(x, _)| x)
-            .max()
-            .unwrap_or(&-1);
-        if new_row == -1 {
-            return false;
-        }
-        path = (r, c, new_row + 1, c);
-        if paths.contains(&path) {
-            return true;
+        path = match d % 4 {
+            // move up
+            0 => {
+                new_row = col_obs
+                    .get(&c)
+                    .unwrap_or(&empty)
+                    .iter()
+                    .filter(|x| x < &&r)
+                    .max()
+                    .unwrap_or(&-1);
+                (r, c, new_row + 1, c)
+            }
+            // move right
+            1 => {
+                new_col = row_obs
+                    .get(&r)
+                    .unwrap_or(&empty)
+                    .iter()
+                    .filter(|x| x > &&c)
+                    .min()
+                    .unwrap_or(&-1);
+                (r, c, r, new_col - 1)
+            }
+            // move down
+            2 => {
+                new_row = col_obs
+                    .get(&c)
+                    .unwrap_or(&empty)
+                    .iter()
+                    .filter(|x| x > &&r)
+                    .min()
+                    .unwrap_or(&-1);
+                (r, c, new_row - 1, c)
+            }
+            // move left
+            3 => {
+                new_col = row_obs
+                    .get(&r)
+                    .unwrap_or(&empty)
+                    .iter()
+                    .filter(|x| x < &&c)
+                    .max()
+                    .unwrap_or(&-1);
+                (r, c, r, new_col + 1)
+            }
+            _ => panic!(),
         };
-        paths.insert(path);
-        r = path.2;
-        c = path.3;
 
-        // move right
-        let new_col: i64 = *obs
-            .iter()
-            .filter(|(x, y)| x == &r && y > &c)
-            .map(|(_, y)| y)
-            .min()
-            .unwrap_or(&-1);
-        if new_col == -1 {
+        if new_col == &-1 || new_row == &-1 {
             return false;
         }
-        path = (r, c, r, new_col - 1);
-        if paths.contains(&path) {
-            return true;
-        };
-        paths.insert(path);
-        r = path.2;
-        c = path.3;
+        d += 1;
 
-        // move down
-        let new_row: i64 = *obs
-            .iter()
-            .filter(|(x, y)| y == &c && x > &r)
-            .map(|(x, _)| x)
-            .min()
-            .unwrap_or(&-1);
-        if new_row == -1 {
-            return false;
-        }
-        path = (r, c, new_row - 1, c);
-        if paths.contains(&path) {
-            return true;
-        };
-        paths.insert(path);
-        r = path.2;
-        c = path.3;
-
-        // move left
-        let new_col: i64 = *obs
-            .iter()
-            .filter(|(x, y)| x == &r && y < &c)
-            .map(|(_, y)| y)
-            .max()
-            .unwrap_or(&-1);
-        if new_col == -1 {
-            return false;
-        }
-        path = (r, c, r, new_col + 1);
         if paths.contains(&path) {
             return true;
         };
@@ -171,15 +168,33 @@ pub fn problem() -> (usize, String, String) {
 
     let result0: usize = visited.len();
 
+    let mut row_obs: HashMap<i64, HashSet<i64>> = HashMap::new();
+    let mut col_obs: HashMap<i64, HashSet<i64>> = HashMap::new();
+
+    for (r, c) in &obs_locs {
+        if !row_obs.contains_key(&r) {
+            row_obs.insert(*r, HashSet::new());
+        }
+        if !col_obs.contains_key(&c) {
+            col_obs.insert(*c, HashSet::new());
+        }
+        row_obs.get_mut(&r).unwrap().insert(*c);
+        col_obs.get_mut(&c).unwrap().insert(*r);
+    }
+
     let mut result1: i64 = 0;
     let mut new_loc: (i64, i64);
     for idx in 0..num_rows {
         for jdx in 0..num_cols {
             new_loc = (idx, jdx);
             if !obs_locs.contains(&new_loc) {
-                obs_locs.insert(new_loc);
-                result1 += if is_loop(gloc, &obs_locs) { 1 } else { 0 };
-                obs_locs.remove(&new_loc);
+                row_obs.get_mut(&idx).unwrap().insert(jdx);
+                col_obs.get_mut(&jdx).unwrap().insert(idx);
+
+                result1 += is_loop(gloc, &row_obs, &col_obs) as i64;
+
+                row_obs.get_mut(&idx).unwrap().remove(&jdx);
+                col_obs.get_mut(&jdx).unwrap().remove(&idx);
             }
         }
     }
