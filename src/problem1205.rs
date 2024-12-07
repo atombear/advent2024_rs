@@ -15,11 +15,9 @@ fn parse_pages(s: String) -> Vec<i64> {
 }
 
 fn process_pages(pv: &Vec<i64>, rs: &HashSet<(i64, i64)>) -> i64 {
-    for idx in 0..pv.len() - 1 {
-        for jdx in (idx + 1)..(pv.len()) {
-            if !rs.contains(&(pv[idx], pv[jdx])) {
-                return 0;
-            }
+    for idx in 0..pv.len() - 2 {
+        if !rs.contains(&(pv[idx], pv[idx + 1])) {
+            return 0;
         }
     }
     return pv[pv.len() / 2];
@@ -83,7 +81,7 @@ pub fn problem() -> (usize, String, String) {
 
     for pv in bad_pages {
         let mut m_pv: Vec<i64> = pv.clone();
-        score = process_and_swap_pages(&mut m_pv, &rules_set);
+        score = process_pages(&mut m_pv, &rules_set);
         while score == 0 {
             score = process_and_swap_pages(&mut m_pv, &rules_set);
         }
