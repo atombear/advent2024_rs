@@ -1,6 +1,6 @@
-use std::{iter::zip, path::PathBuf};
-
-use crate::utils::read_lines;
+use crate::utils::{pnum_from_file, process_input};
+use itertools::iproduct;
+use std::iter::zip;
 
 type WS = Vec<Vec<char>>;
 
@@ -35,47 +35,41 @@ fn bool_to_num(b: bool) -> i64 {
 }
 
 pub fn problem() -> (usize, String, String) {
-    let data_dir: String = env!("CARGO_MANIFEST_DIR").to_owned();
-    let data_path: PathBuf = [data_dir, "src".to_string(), "input4".to_string()].iter().collect();
+    let problem_number: usize = pnum_from_file(file!());
 
     let mut ws: Vec<Vec<char>> = vec![];
 
-    if let Ok(lines) = read_lines(data_path) {
-        for line in lines {
-            if let Ok(x) = line {
-                ws.push(x.chars().collect());
-            }
-        }
-    }
+    let process_line = |x: String| {
+        ws.push(x.chars().collect());
+    };
+    process_input(problem_number, process_line);
 
     let (num_rows, num_cols) = get_num_rc(&ws);
 
     let mut result0: i64 = 0;
     let mut result1: i64 = 0;
 
-    for i in 0..num_rows {
-        for j in 0..num_cols {
-            for pattern in [
-                vec![(0, 0), (0, 1), (0, 2), (0, 3)],
-                vec![(0, 0), (0, -1), (0, -2), (0, -3)],
-                vec![(0, 0), (1, 0), (2, 0), (3, 0)],
-                vec![(0, 0), (-1, 0), (-2, 0), (-3, 0)],
-                vec![(0, 0), (1, 1), (2, 2), (3, 3)],
-                vec![(0, 0), (-1, -1), (-2, -2), (-3, -3)],
-                vec![(0, 0), (1, -1), (2, -2), (3, -3)],
-                vec![(0, 0), (-1, 1), (-2, 2), (-3, 3)],
-            ] {
-                result0 += bool_to_num(find_xmas(&ws, i, j, pattern, "XMAS"));
-            }
-
-            result1 += bool_to_num(
-                (find_xmas(&ws, i, j, vec![(-1, -1), (0, 0), (1, 1)], "MAS")
-                    || find_xmas(&ws, i, j, vec![(-1, -1), (0, 0), (1, 1)], "SAM"))
-                    && (find_xmas(&ws, i, j, vec![(1, -1), (0, 0), (-1, 1)], "MAS")
-                        || find_xmas(&ws, i, j, vec![(1, -1), (0, 0), (-1, 1)], "SAM")),
-            );
+    for (i, j) in iproduct!(0..num_rows, 0..num_cols) {
+        for pattern in [
+            vec![(0, 0), (0, 1), (0, 2), (0, 3)],
+            vec![(0, 0), (0, -1), (0, -2), (0, -3)],
+            vec![(0, 0), (1, 0), (2, 0), (3, 0)],
+            vec![(0, 0), (-1, 0), (-2, 0), (-3, 0)],
+            vec![(0, 0), (1, 1), (2, 2), (3, 3)],
+            vec![(0, 0), (-1, -1), (-2, -2), (-3, -3)],
+            vec![(0, 0), (1, -1), (2, -2), (3, -3)],
+            vec![(0, 0), (-1, 1), (-2, 2), (-3, 3)],
+        ] {
+            result0 += bool_to_num(find_xmas(&ws, i, j, pattern, "XMAS"));
         }
+
+        result1 += bool_to_num(
+            (find_xmas(&ws, i, j, vec![(-1, -1), (0, 0), (1, 1)], "MAS")
+                || find_xmas(&ws, i, j, vec![(-1, -1), (0, 0), (1, 1)], "SAM"))
+                && (find_xmas(&ws, i, j, vec![(1, -1), (0, 0), (-1, 1)], "MAS")
+                    || find_xmas(&ws, i, j, vec![(1, -1), (0, 0), (-1, 1)], "SAM")),
+        );
     }
 
-    return (3, format!("{}", result0), format!("{}", result1));
+    return (problem_number, format!("{}", result0), format!("{}", result1));
 }

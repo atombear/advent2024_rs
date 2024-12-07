@@ -1,8 +1,8 @@
-use std::{iter::zip, path::PathBuf};
+use std::iter::zip;
 
-use crate::utils::read_lines;
+use crate::utils::{pnum_from_file, process_input};
 
-fn process_line(s: String) -> (i64, Vec<i64>) {
+fn parse_line(s: String) -> (i64, Vec<i64>) {
     let mut i = s.split(':');
     let lhs: i64 = i.next().unwrap().parse().unwrap();
     let rhs: Vec<i64> = i
@@ -37,26 +37,23 @@ fn pattern_exists(lhs: i64, rhs: &Vec<i64>, carry: i64, idx: usize, check: bool)
 }
 
 pub fn problem() -> (usize, String, String) {
-    let data_dir: String = env!("CARGO_MANIFEST_DIR").to_owned();
-    let data_path: PathBuf = [data_dir, "src".to_string(), "input7".to_string()].iter().collect();
+    let problem_number: usize = pnum_from_file(file!());
 
     let mut lhss: Vec<i64> = vec![];
     let mut rhss: Vec<Vec<i64>> = vec![];
 
-    if let Ok(lines) = read_lines(data_path) {
-        for line in lines {
-            if let Ok(x) = line {
-                let (lhs, rhs) = process_line(x);
-                lhss.push(lhs);
-                rhss.push(rhs);
-            }
-        }
-    }
+    let process_line = |x: String| {
+        let (lhs, rhs) = parse_line(x);
+        lhss.push(lhs);
+        rhss.push(rhs);
+    };
+    process_input(problem_number, process_line);
+
     let mut result0: i64 = 0;
     let mut result1: i64 = 0;
     for (lhs, rhs) in zip(lhss, rhss) {
         result0 += lhs * (pattern_exists(lhs, &rhs, rhs[0], 1, false) as i64);
         result1 += lhs * (pattern_exists(lhs, &rhs, rhs[0], 1, true) as i64);
     }
-    return (6, format!("{}", result0), format!("{}", result1));
+    return (problem_number, format!("{}", result0), format!("{}", result1));
 }

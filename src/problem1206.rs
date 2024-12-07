@@ -1,9 +1,6 @@
-use std::{
-    collections::{HashMap, HashSet},
-    path::PathBuf,
-};
+use std::collections::{HashMap, HashSet};
 
-use crate::utils::read_lines;
+use crate::utils::{pnum_from_file, process_input};
 
 struct Guard {
     loc: (i64, i64),
@@ -113,8 +110,7 @@ fn is_loop(start: (i64, i64), row_obs: &HashMap<i64, HashSet<i64>>, col_obs: &Ha
 }
 
 pub fn problem() -> (usize, String, String) {
-    let data_dir: String = env!("CARGO_MANIFEST_DIR").to_owned();
-    let data_path: PathBuf = [data_dir, "src".to_string(), "input6".to_string()].iter().collect();
+    let problem_number: usize = pnum_from_file(file!());
 
     let mut num_cols: i64 = 0;
     let mut num_rows: i64 = 0;
@@ -122,22 +118,22 @@ pub fn problem() -> (usize, String, String) {
     let mut obs_locs: HashSet<(i64, i64)> = HashSet::new();
     let mut gloc: (i64, i64) = (0, 0);
 
-    if let Ok(lines) = read_lines(data_path) {
-        for (idx, line) in lines.enumerate() {
-            if let Ok(x) = line {
-                num_cols = x.len() as i64;
-                num_rows += 1;
+    let mut idx: usize = 0;
 
-                for (jdx, c) in x.chars().enumerate() {
-                    if c == '#' {
-                        obs_locs.insert((idx as i64, jdx as i64));
-                    } else if c == '^' {
-                        gloc = (idx as i64, jdx as i64);
-                    }
-                }
+    let process_line = |x: String| {
+        num_cols = x.len() as i64;
+        num_rows += 1;
+
+        for (jdx, c) in x.chars().enumerate() {
+            if c == '#' {
+                obs_locs.insert((idx as i64, jdx as i64));
+            } else if c == '^' {
+                gloc = (idx as i64, jdx as i64);
             }
         }
-    }
+        idx += 1;
+    };
+    process_input(problem_number, process_line);
 
     let mut visited: HashSet<(i64, i64)> = HashSet::new();
 
@@ -199,5 +195,5 @@ pub fn problem() -> (usize, String, String) {
         }
     }
 
-    return (5, format!("{}", result0), format!("{}", result1));
+    return (problem_number, format!("{}", result0), format!("{}", result1));
 }

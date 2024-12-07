@@ -1,10 +1,10 @@
-use std::path::PathBuf;
-
-use crate::utils::read_lines;
+use crate::utils::{pnum_from_file, process_input};
 
 pub fn problem() -> (usize, String, String) {
-    let data_dir: String = env!("CARGO_MANIFEST_DIR").to_owned();
-    // let data_path: PathBuf = [data_dir, "src".to_string(), "input11".to_string()].iter().collect();
+    let problem_number: usize = pnum_from_file(file!());
 
-    return (10, format!("{}", 0), format!("{}", 0));
+    let process_line = |line: String| {};
+    process_input(problem_number, process_line);
+
+    return (problem_number, format!("{}", 0), format!("{}", 0));
 }
