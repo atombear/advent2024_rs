@@ -1,6 +1,6 @@
-use std::{collections::HashSet, path::PathBuf};
+use std::collections::HashSet;
 
-use crate::utils::read_lines;
+use crate::utils::{pnum_from_file, process_input};
 
 fn parse_rule(s: String) -> (i64, i64) {
     let mut xy = s.split('|');
@@ -38,27 +38,23 @@ fn process_and_swap_pages(pv: &mut Vec<i64>, rs: &HashSet<(i64, i64)>) -> i64 {
 }
 
 pub fn problem() -> (usize, String, String) {
-    let data_dir: String = env!("CARGO_MANIFEST_DIR").to_owned();
-    let data_path: PathBuf = [data_dir, "src".to_string(), "input5".to_string()].iter().collect();
+    let problem_number: usize = pnum_from_file(file!());
 
     let mut parse_rule_now: bool = true;
 
     let mut rules_vec: Vec<(i64, i64)> = vec![];
     let mut pages_vec: Vec<Vec<i64>> = vec![];
 
-    if let Ok(lines) = read_lines(data_path) {
-        for line in lines {
-            if let Ok(x) = line {
-                if x == "" {
-                    parse_rule_now = false;
-                } else if parse_rule_now {
-                    rules_vec.push(parse_rule(x));
-                } else {
-                    pages_vec.push(parse_pages(x));
-                }
-            }
+    let process_line = |x: String| {
+        if x == "" {
+            parse_rule_now = false;
+        } else if parse_rule_now {
+            rules_vec.push(parse_rule(x));
+        } else {
+            pages_vec.push(parse_pages(x));
         }
-    }
+    };
+    process_input(problem_number, process_line);
 
     let rules_set: HashSet<(i64, i64)> = rules_vec.iter().map(|x| *x).collect();
 
@@ -88,5 +84,5 @@ pub fn problem() -> (usize, String, String) {
         result1 += score;
     }
 
-    return (4, format!("{}", result0), format!("{}", result1));
+    return (problem_number, format!("{}", result0), format!("{}", result1));
 }

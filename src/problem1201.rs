@@ -1,7 +1,6 @@
+use crate::utils::{pnum_from_file, process_input};
 use core::hash::Hash;
-use std::{collections::HashMap, iter::zip, path::PathBuf};
-
-use crate::utils::read_lines;
+use std::{collections::HashMap, iter::zip};
 
 fn extract_number_pair(s: String) -> (i64, i64) {
     let l: Vec<i64> = s
@@ -27,24 +26,18 @@ fn get_count_map<'a, T: Eq + PartialEq + Hash>(l: &'a Vec<T>) -> HashMap<&'a T, 
 }
 
 pub fn problem() -> (usize, String, String) {
-    let data_dir: String = env!("CARGO_MANIFEST_DIR").to_owned();
-    let data_path: PathBuf = [data_dir, "src".to_string(), "input1".to_string()].iter().collect();
-
-    let mut x0: i64;
-    let mut x1: i64;
+    let problem_number: usize = pnum_from_file(file!());
 
     let mut l0: Vec<i64> = vec![];
     let mut l1: Vec<i64> = vec![];
 
-    if let Ok(lines) = read_lines(data_path) {
-        for line in lines {
-            if let Ok(num_pair) = line {
-                (x0, x1) = extract_number_pair(num_pair);
-                l0.push(x0);
-                l1.push(x1);
-            }
-        }
-    }
+    let process_line = |s: String| {
+        let (x0, x1) = extract_number_pair(s);
+        l0.push(x0);
+        l1.push(x1);
+    };
+
+    process_input(problem_number, process_line);
 
     l0.sort();
     l1.sort();
@@ -55,5 +48,5 @@ pub fn problem() -> (usize, String, String) {
 
     let result1: i64 = l0.iter().map(|x| x * d.get(x).unwrap_or(&0)).sum();
 
-    return (0, format!("{}", result0), format!("{}", result1));
+    return (problem_number, format!("{}", result0), format!("{}", result1));
 }

@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 regex = "1.10.2"
 ascii_converter = "0.3.0"
+itertools = "0.13.0"
 # ndarray = "0.15.6"
 
 ndarray = { version = "0.15.6", features = ["blas"] }

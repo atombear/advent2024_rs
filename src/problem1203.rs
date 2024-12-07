@@ -1,6 +1,4 @@
-use std::path::PathBuf;
-
-use crate::utils::read_lines;
+use crate::utils::{pnum_from_file, process_input};
 
 fn scan_mem(m: &Vec<char>, track_do: bool) -> i64 {
     let mut j: usize;
@@ -58,20 +56,19 @@ fn scan_mem(m: &Vec<char>, track_do: bool) -> i64 {
 }
 
 pub fn problem() -> (usize, String, String) {
-    let data_dir: String = env!("CARGO_MANIFEST_DIR").to_owned();
-    let data_path: PathBuf = [data_dir, "src".to_string(), "input3".to_string()].iter().collect();
+    let problem_number: usize = pnum_from_file(file!());
+
     let mut result0: i64 = 0;
     let mut result1: i64 = 0;
     let mut y: Vec<char> = vec![];
-    if let Ok(lines) = read_lines(data_path) {
-        for line in lines {
-            if let Ok(x) = line {
-                y.extend(x.chars());
-            }
-        }
-    }
+
+    let process_line = |x: String| {
+        y.extend(x.chars());
+    };
+    process_input(problem_number, process_line);
+
     result0 += scan_mem(&y, true);
     result1 += scan_mem(&y, false);
 
-    return (2, format!("{}", result0), format!("{}", result1));
+    return (problem_number, format!("{}", result0), format!("{}", result1));
 }
