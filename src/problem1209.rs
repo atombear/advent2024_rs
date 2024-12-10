@@ -128,8 +128,8 @@ pub fn problem() -> (usize, String, String) {
         }
     }
 
-    let result0 = defrag0(&files, &empty);
-    let result1 = defrag1(&all_locs);
+    let result0: i64 = defrag0(&files, &empty);
+    let result1: i64 = defrag1(&all_locs);
 
     return (problem_number, format!("{}", result0), format!("{}", result1));
 }
