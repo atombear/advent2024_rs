@@ -16,7 +16,7 @@ fn get_num_lines(pp: HashSet<(i64, i64, i64, i64)>) -> i64 {
 
     let mut idx: i64;
     while pp.len() > 0 {
-        let rc = *pp.iter().next().unwrap();
+        let rc: (i64, i64, i64, i64) = *pp.iter().next().unwrap();
         pp.remove(&rc);
         (r, r0, c, c0) = rc;
 
