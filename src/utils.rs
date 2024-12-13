@@ -47,6 +47,6 @@ pub fn pnum_from_file(file: &str) -> usize {
         - 1;
 }
 
-fn print<T: Debug>(x: T) {
+pub fn print<T: Debug>(x: T) {
     println!("{:?}", x);
 }
