@@ -1,6 +1,6 @@
+use std::fmt::Debug;
 use std::fs::File;
 use std::io::{self, BufRead};
-use std::os::unix::process;
 use std::path::{Path, PathBuf};
 
 pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -45,4 +45,8 @@ pub fn pnum_from_file(file: &str) -> usize {
         .map(|(x, y)| 10_i32.pow(x as u32) as usize * y)
         .sum::<usize>()
         - 1;
+}
+
+fn print<T: Debug>(x: T) {
+    println!("{:?}", x);
 }
