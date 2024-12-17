@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    cmp::min,
+    collections::{HashMap, HashSet},
+};
 
 use crate::utils::{pnum_from_file, print, process_input};
 
@@ -39,97 +42,6 @@ fn score_path(p: &Vec<(C, C)>) -> i64 {
     return ret;
 }
 
-fn min_path_df(
-    pos_dir: (C, C),
-    end: C,
-    maze: &HashSet<C>,
-    visited: &mut HashSet<(C, C)>,
-    score: i64,
-    // min_score_box: &mut Vec<i64>,
-    cache: &mut HashMap<(C, C), i64>,
-    path: &mut Vec<(C, C)>,
-) -> i64 {
-    // if score > min_score_box[0] {
-    //     return score;
-    // }
-
-    let (pos, dir) = pos_dir;
-
-    let mut scores: Vec<i64> = vec![];
-    let mut new_pos: C;
-
-    if pos == end {
-        // if score < min_score_box[0] {
-        //     min_score_box[0] = score;
-        // }
-        // print(pos);
-        // print(score_path(path));
-        return score;
-    } else if !cache.contains_key(&pos_dir) {
-        for new_dir in [dir, rotate_left(dir), rotate_right(dir)] {
-            new_pos = (pos.0 + new_dir.0, pos.1 + new_dir.1);
-            if maze.contains(&new_pos) && !visited.contains(&(new_pos, (0, 0))) {
-                visited.insert((new_pos, (0, 0)));
-                path.push((new_pos, new_dir));
-                scores.push(min_path_df(
-                    (new_pos, new_dir),
-                    end,
-                    maze,
-                    visited,
-                    1 + if dir == new_dir { 0 } else { 1000 },
-                    cache,
-                    path,
-                ));
-                visited.remove(&(new_pos, (0, 0)));
-                path.pop();
-            }
-        }
-        // print(&pos_dir);
-        // print(&scores);
-        // print(&end);
-        cache.insert(pos_dir, *scores.iter().min().unwrap_or(&BIG_NUM));
-    }
-
-    return *cache.get(&pos_dir).unwrap() + score;
-}
-
-fn search_maze_by_score(
-    pos_dir: (C, C),
-    end: C,
-    maze: &HashSet<C>,
-    visited: &mut HashSet<(C, C)>,
-    path_points: &mut HashSet<C>,
-    score: i64,
-    max_score: i64,
-) {
-    let (pos, dir) = pos_dir;
-    if score > max_score {
-        return;
-    } else if score == max_score && pos == end {
-        for (c, _) in visited.iter() {
-            path_points.insert(*c);
-        }
-    } else {
-        let mut new_pos: C;
-        for new_dir in [dir, rotate_left(dir), rotate_right(dir)] {
-            new_pos = (pos.0 + new_dir.0, pos.1 + new_dir.1);
-            if maze.contains(&new_pos) && !visited.contains(&(new_pos, new_dir)) {
-                visited.insert((new_pos, new_dir));
-                search_maze_by_score(
-                    (new_pos, new_dir),
-                    end,
-                    maze,
-                    visited,
-                    path_points,
-                    score + 1 + if dir == new_dir { 0 } else { 1000 },
-                    max_score,
-                );
-                visited.remove(&(new_pos, new_dir));
-            }
-        }
-    }
-}
-
 fn min_path_bf(pos_dir: (C, C), end: C, maze: &HashSet<C>) -> i64 {
     let (pos, dir) = pos_dir;
 
@@ -161,6 +73,66 @@ fn min_path_bf(pos_dir: (C, C), end: C, maze: &HashSet<C>) -> i64 {
     return *scores.iter().min().unwrap();
 }
 
+fn djikstra(start: C, maze: &HashSet<C>, start_dir: C) -> HashMap<(C, C), i64> {
+    let mut unvisited: HashMap<(C, C), i64> = HashMap::new();
+    let mut visited: HashMap<(C, C), i64> = HashMap::new();
+    for n in maze {
+        for dc in [(0, 1), (1, 0), (0, -1), (-1, 0)] {
+            unvisited.insert((*n, dc), BIG_NUM);
+        }
+    }
+    unvisited.insert((start, start_dir), 0);
+
+    let mut pos: C;
+    let mut dir: C;
+    let mut new_pos: C;
+    let mut new_dir: C;
+    let mut score: i64;
+
+    while unvisited.len() > 0 {
+        let temp = unvisited
+            .iter()
+            .map(|(x, y)| (*x, *y))
+            .min_by_key(|(_, d)| d.clone())
+            .unwrap();
+        (pos, dir) = temp.0;
+        score = temp.1;
+
+        unvisited.remove(&temp.0);
+
+        visited.insert((pos, dir), score);
+
+        for new_dir in [dir, rotate_left(dir), rotate_right(dir)] {
+            new_pos = (pos.0 + new_dir.0, pos.1 + new_dir.1);
+            if unvisited.contains_key(&(new_pos, new_dir)) {
+                let old_score: i64 = *unvisited.get(&(new_pos, new_dir)).unwrap();
+                unvisited.insert(
+                    (new_pos, new_dir),
+                    min(old_score, score + 1 + if dir == new_dir { 0 } else { 1000 }),
+                );
+            }
+        }
+    }
+
+    return visited;
+}
+
+fn trace_visited(pos_dir: (C, C), visited_se: &HashMap<(C, C), i64>, score: i64, all_visit: &mut HashSet<C>) {
+    if visited_se.contains_key(&pos_dir) && visited_se.get(&pos_dir).unwrap() == &score {
+        let (pos, dir) = pos_dir;
+        all_visit.insert(pos);
+        println!("{:?} {:?}", pos, visited_se.get(&pos_dir).unwrap());
+        for new_dir in [dir, rotate_left(dir), rotate_right(dir)] {
+            trace_visited(
+                ((pos.0 - dir.0, pos.1 - dir.1), new_dir),
+                visited_se,
+                *visited_se.get(&pos_dir).unwrap() - 1 - if dir == new_dir { 0 } else { 1000 },
+                all_visit,
+            );
+        }
+    }
+}
+
 pub fn problem() -> (usize, String, String) {
     let problem_number: usize = pnum_from_file(file!());
 
@@ -186,24 +158,23 @@ pub fn problem() -> (usize, String, String) {
     };
     process_input(problem_number, process_line);
 
-    // print(start);
-    // print(end);
-    // print(points);
+    let result0: i64 = min_path_bf((start, (0, 1)), end, &points);
 
-    let mut visited: HashSet<(C, C)> = HashSet::from([(start, (0, 1))]);
-    let mut cache: HashMap<(C, C), i64> = HashMap::new();
+    let visited_se: HashMap<((i64, i64), (i64, i64)), i64> = djikstra(start, &points, (0, 1));
 
-    // let mut min_score_box: Vec<i64> = vec![BIG_NUM];
-    let result0 = min_path_bf((start, (0, 1)), end, &points);
-    // let mut path: Vec<(C, C)> = vec![];
-    // let result0: i64 = min_path_df((start, (0, 1)), end, &points, &mut visited, 0, &mut cache,&mut path);
-    // let result0: i64 = min_path_df((end, (0, -1)), start, &points, &mut visited, 0, &mut cache,&mut path);
+    let end_dir: C = visited_se
+        .iter()
+        .map(|(x, y)| (*x, *y))
+        .filter(|(x, _)| x.0 == end)
+        .min_by_key(|(_, x)| x.clone())
+        .unwrap()
+        .0
+         .1;
 
-    let mut visited: HashSet<(C, C)> = HashSet::from([(start, (0, 1))]);
-    let mut path_points: HashSet<C> = HashSet::new();
-    // search_maze_by_score((start, (0, 1)), end, &points, &mut visited, &mut path_points, 0, result0);
+    let mut all_visit: HashSet<C> = HashSet::new();
+    trace_visited((end, end_dir), &visited_se, result0, &mut all_visit);
 
-    let result1: i64 = path_points.len() as i64;
+    let result1: i64 = all_visit.len() as i64;
 
     return (problem_number, format!("{}", result0), format!("{}", result1));
 }
