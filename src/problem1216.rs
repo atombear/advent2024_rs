@@ -29,19 +29,6 @@ fn rotate_right(dc: C) -> C {
     };
 }
 
-fn score_path(p: &Vec<(C, C)>) -> i64 {
-    let mut ret: i64 = 0;
-
-    for idx in 0..p.len() - 1 {
-        if p[idx].1 == p[idx + 1].1 {
-            ret += 1;
-        } else {
-            ret += 1000;
-        }
-    }
-    return ret;
-}
-
 fn min_path_bf(pos_dir: (C, C), end: C, maze: &HashSet<C>) -> i64 {
     let (pos, dir) = pos_dir;
 
@@ -86,7 +73,6 @@ fn djikstra(start: C, maze: &HashSet<C>, start_dir: C) -> HashMap<(C, C), i64> {
     let mut pos: C;
     let mut dir: C;
     let mut new_pos: C;
-    let mut new_dir: C;
     let mut score: i64;
 
     while unvisited.len() > 0 {
