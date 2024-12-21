@@ -107,7 +107,6 @@ fn trace_visited(pos_dir: (C, C), visited_se: &HashMap<(C, C), i64>, score: i64,
     if visited_se.contains_key(&pos_dir) && visited_se.get(&pos_dir).unwrap() == &score {
         let (pos, dir) = pos_dir;
         all_visit.insert(pos);
-        println!("{:?} {:?}", pos, visited_se.get(&pos_dir).unwrap());
         for new_dir in [dir, rotate_left(dir), rotate_right(dir)] {
             trace_visited(
                 ((pos.0 - dir.0, pos.1 - dir.1), new_dir),
