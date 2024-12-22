@@ -29,7 +29,7 @@ fn bfs_paths(start: C, end: C, points: &HashSet<C>) -> Vec<Vec<char>> {
                 visited.insert(pos);
                 for (d, dpos) in zip(['>', '<', 'v', '^'], [(0, 1), (0, -1), (1, 0), (-1, 0)]) {
                     new_pos = (pos.0 + dpos.0, pos.1 + dpos.1);
-                    let mut new_path = path.clone();
+                    let mut new_path: Vec<char> = path.clone();
                     new_path.push(d);
                     if !visited.contains(&new_pos) && points.contains(&new_pos) {
                         to_visit_next.insert((new_pos, new_path));
@@ -77,22 +77,20 @@ fn _buttons(
                 // each path must start on and end on A
                 path_len = 0;
                 for jdx in 0..path.len() {
-                    if jdx == 0 {
-                        istart = 'A';
-                        iend = path[0];
+                    (istart, iend) = if jdx == 0 {
+                        ('A', path[0])
                     } else {
-                        istart = path[jdx - 1];
-                        iend = path[jdx];
-                    }
+                        (path[jdx - 1], path[jdx])
+                    };
                     path_len += _buttons(istart, iend, k_cps, cache_paths, max_idx, idx + 1, cache)
                 }
                 // path length 0 means two consecutive pushes of the same type, eg, <<
                 // requires an A push
-                if path.len() == 0 {
-                    path_len += 1;
+                path_len += if path.len() == 0 {
+                    1
                 } else {
-                    path_len += _buttons(path[path.len() - 1], 'A', k_cps, cache_paths, max_idx, idx + 1, cache);
-                }
+                    _buttons(path[path.len() - 1], 'A', k_cps, cache_paths, max_idx, idx + 1, cache)
+                };
 
                 ret = min(ret, path_len);
             }
@@ -114,13 +112,11 @@ fn buttons(
     let mut key_a: char;
     let mut cache: HashMap<(char, char, usize), i64> = HashMap::new();
     for jdx in 0..keys_a.len() {
-        if jdx == 0 {
-            start = 'A';
-            key_a = keys_a[0];
+        (start, key_a) = if jdx == 0 {
+            ('A', keys_a[0])
         } else {
-            start = keys_a[jdx - 1];
-            key_a = keys_a[jdx];
-        }
+            (keys_a[jdx - 1], keys_a[jdx])
+        };
 
         ret += _buttons(start, key_a, k_cps, cache_paths, max_idx, 0, &mut cache);
     }
@@ -130,7 +126,10 @@ fn buttons(
 pub fn problem() -> (usize, String, String) {
     let problem_number: usize = pnum_from_file(file!());
 
-    let process_line = |line: String| {};
+    let mut vals: Vec<String> = vec![];
+    let process_line = |line: String| {
+        vals.push(line);
+    };
     process_input(problem_number, process_line);
 
     // alphanumeric
@@ -170,8 +169,7 @@ pub fn problem() -> (usize, String, String) {
     let mut result0: i64 = 0;
     let mut result1: i64 = 0;
     let mut num: i64;
-    // for str_val in ["029A", "980A", "179A", "456A", "379A"] {
-    for str_val in ["319A", "985A", "340A", "489A", "964A"] {
+    for str_val in vals {
         num = str_val.chars().take(3).collect::<String>().parse::<i64>().unwrap();
         result0 += num
             * (buttons(
