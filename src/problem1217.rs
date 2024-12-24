@@ -242,9 +242,9 @@ pub fn problem() -> (usize, String, String) {
     };
 
     let mut result1: i64 = 0;
-    let digits: Vec<i8> = program0.ops.iter().rev().map(|x| *x).collect::<Vec<i8>>();
-    let mut placeholder: Vec<i64> = digits.iter().map(|x| 0).collect();
-    let mut continuing: Vec<bool> = digits.iter().map(|x| false).collect();
+    let digits: Vec<i8> = program0.ops.iter().rev().map(|x: &i8| *x).collect::<Vec<i8>>();
+    let mut placeholder: Vec<i64> = digits.iter().map(|_| 0).collect();
+    let mut continuing: Vec<bool> = digits.iter().map(|_| false).collect();
     let mut idx: usize = 0;
     while idx < digits.len() {
         let mut found: bool = false;
